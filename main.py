@@ -9,26 +9,32 @@ ENTRY_FONT = ('Lucida Sans Unicode', 15, 'normal')
 
 
 def countdown(time_left):
-    if time_left == 0:
+    global countdown_timer
+    if time_left == -1:
+        window.after_cancel(countdown_timer)
         time_up()
-    timer.set(time_left)
-    window.after(1000, countdown, time_left-1)
+    else:
+        timer.set(time_left)
+        countdown_timer = window.after(1000, countdown, time_left-1)
 
 
 def time_up():
+    global started
+    started = False
+
     text_entry.config(state=tk.DISABLED)
-    messagebox.showinfo(title="Result", message=f"Correctly typed words: {correct}\nTotal words typed: {words_entered}")
-    if messagebox.askyesno(title="Retry?", message="Wanna retry?"):
-        timer.set(60)
-        text_entry.config(state=tk.NORMAL)
-    else:
+    ans = messagebox.askokcancel(title="Result",
+                                 message=f"Correctly typed words: {correct}\nTotal words typed: {words_entered}")
+    if ans or not ans:
         window.destroy()
 
 
 def handle_type(e):
-    global correct, words_entered
-    if timer.get() == 60:
+    global correct, words_entered, started
+    if not started:
+        started = True
         countdown(60)
+
     text_box.config(state=tk.NORMAL)
 
     if e.char == ' ':
@@ -73,6 +79,8 @@ correct = 0
 words_entered = 0
 words_in_label = {}
 words = []
+countdown_timer = None
+started = False
 
 list_of_thousand_words = util.words
 
@@ -93,7 +101,7 @@ time_label = tk.Label(frame, textvariable=timer, font=('Arial', 14, 'normal'))
 
 
 text_box = tk.Text(frame, width=21, height=3.3, bg="white", font=FONT, borderwidth=2, relief='solid',
-                     padx=16, pady=10, state=tk.DISABLED, wrap=tk.WORD)
+                   padx=16, pady=10, state=tk.DISABLED, wrap=tk.WORD)
 init_textbox()
 
 text = tk.StringVar()
